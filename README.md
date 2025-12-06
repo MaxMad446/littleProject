@@ -5,9 +5,9 @@
 Автоматическое добавление Python скриптов в GitHub репозиторий.
 
 ## 📊 Статистика
-- **Всего скриптов:** 3
+- **Всего скриптов:** 4
 - **Последнее обновление:** 2025-12-06
-- **Последний скрипт:** 2025-12-06_hello_world
+- **Последний скрипт:** 2025-12-06_random_data
 
 ## 🚀 Как использовать
 
@@ -19,11 +19,12 @@ cd littleProject
 
 2. Запустите любой скрипт:
 \`\`\`bash
-python daily_python_scripts/2025-12-06_hello_world.py
+python daily_python_scripts/2025-12-06_random_data.py
 \`\`\`
 
 ## 📁 Список скриптов
 
+- [2025-12-06_random_data](daily_python_scripts/2025-12-06_random_data.py)
 - [2025-12-06_hello_world](daily_python_scripts/2025-12-06_hello_world.py)
 - [2025-12-06_file_operations](daily_python_scripts/2025-12-06_file_operations.py)
 - [2025-12-06_calculator](daily_python_scripts/2025-12-06_calculator.py)
