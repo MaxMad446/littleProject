@@ -235,28 +235,25 @@ def git_operations():
     """Выполняет git операции"""
     try:
         # Добавляем все изменения
-        subprocess.run(["git", "add", "."], 
-                      check=True, capture_output=True, text=True, encoding='utf-8')
+        os.system("git add .")
         
         # Коммит
         today = datetime.datetime.now().strftime("%Y-%m-%d")
-        commit_msg = f"🤖 Daily commit: {today}"
-        subprocess.run(["git", "commit", "-m", commit_msg], 
-                      check=True, capture_output=True, text=True, encoding='utf-8')
+        commit_msg = f"Daily commit: {today}"
+        result = os.system(f'git commit -m "{commit_msg}"')
         
-        # Push
-        subprocess.run(["git", "push"], 
-                      check=True, capture_output=True, text=True, encoding='utf-8')
-        
-        print(f"✅ Коммит создан: {commit_msg}")
-        print("✅ Изменения отправлены на GitHub")
-        
-        return True
-        
-    except subprocess.CalledProcessError as e:
-        print(f"❌ Ошибка git: {e}")
-        if e.stderr:
-            print(f"Детали: {e.stderr}")
+        if result == 0:
+            # Push
+            os.system("git push")
+            print(f"Коммит создан: {commit_msg}")
+            print("Изменения отправлены на GitHub")
+            return True
+        else:
+            print("Ошибка при создании коммита")
+            return False
+            
+    except Exception as e:
+        print(f"Ошибка: {e}")
         return False
 
 def main():
