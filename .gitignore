@@ -1,0 +1,35 @@
+# Создаем .gitignore
+@'
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Логи
+*.log
+commit_log.txt
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+
+# Временные файлы
+*.tmp
+temp/
+test_script.py
+'@ | Set-Content -Path ".gitignore" -Encoding UTF8
+
+Write-Host "✅ Файл .gitignore создан" -ForegroundColor Green
