@@ -1,0 +1,11 @@
+
+{
+    "project_path": "C:/Users/Maxim/Desktop/Project/DailyCommit/littleProject",
+    "scripts_folder": "daily_python_scripts",
+    "daily_time": "09:00",
+    "git_branch": "main",
+    "commit_message_prefix": "🤖 Daily commit:",
+    "ideas_file": "used_ideas.json",
+    "log_file": "daily_commit.log"
+}
+

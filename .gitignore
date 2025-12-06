@@ -1,4 +1,4 @@
-# Создаем .gitignore
+# Обновите .gitignore
 @'
 # Python
 __pycache__/
@@ -6,30 +6,60 @@ __pycache__/
 *$py.class
 *.so
 .Python
+build/
+dist/
+*.egg-info/
+pip-wheel-metadata/
 
 # Virtual Environment
 venv/
 env/
 ENV/
+env.bak/
+venv.bak/
 
 # IDE
 .vscode/
 .idea/
 *.swp
 *.swo
+*.sublime-*
 
 # Логи
 *.log
+logs/
 commit_log.txt
 
 # Системные файлы
 .DS_Store
 Thumbs.db
+desktop.ini
 
 # Временные файлы
 *.tmp
+*.temp
 temp/
-test_script.py
+tmp/
+
+# Файлы скриптов (можно добавить, если не хотите их в репозитории)
+# test_script.py
+# example.txt
+
+# Конфигурационные файлы (опционально, если хотите хранить в репозитории)
+# config.json
+# used_ideas.json
+
+# Файлы для Windows
+*.ps1
+*.bat
+*.cmd
+
+# Исключения (файлы которые должны быть в репозитории)
+!daily_commit.py
+!manager.ps1
+!setup.ps1
+!run_daily.bat
+!config.json
 '@ | Set-Content -Path ".gitignore" -Encoding UTF8
 
-Write-Host "✅ Файл .gitignore создан" -ForegroundColor Green
+Write-Host "✅ Файл .gitignore обновлен" -ForegroundColor Green
