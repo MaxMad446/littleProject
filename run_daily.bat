@@ -1,3 +1,5 @@
+# Создайте run_daily.bat для простого запуска
+@'
 @echo off
 chcp 65001 > nul
 echo ========================================
@@ -35,3 +37,6 @@ if %errorlevel% equ 0 (
 echo.
 echo Завершено. Нажмите любую клавишу...
 pause > nul
+'@ | Set-Content -Path "run_daily.bat" -Encoding ASCII
+
+Write-Host "✅ Файл run_daily.bat создан" -ForegroundColor Green
