@@ -1,0 +1,290 @@
+name: Daily Python Commit
+
+on:
+  workflow_dispatch:  # Позволяет запускать вручную
+  schedule:
+    - cron: '0 9 * * *'  # Ежедневно в 09:00 по UTC
+  push:
+    branches: [ main ]
+
+jobs:
+  daily-commit:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      
+    env:
+      PYTHON_VERSION: '3.11'
+      
+    steps:
+    - name: 🛠️ Настройка окружения
+      uses: actions/checkout@v4
+      with:
+        token: ${{ secrets.GITHUB_TOKEN }}
+        
+    - name: 🐍 Установка Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: ${{ env.PYTHON_VERSION }}
+        
+    - name: 📦 Установка зависимостей
+      run: |
+        echo "Установка необходимых пакетов..."
+        python -m pip install --upgrade pip
+        
+    - name: 📂 Создание необходимых папок
+      run: |
+        mkdir -p daily_python_scripts
+        mkdir -p logs
+        mkdir -p backups
+        
+    - name: 📝 Проверка существующих файлов
+      id: check_files
+      run: |
+        TODAY=$(date +"%Y-%m-%d")
+        COUNT=$(ls daily_python_scripts/${TODAY}_*.py 2>/dev/null | wc -l)
+        echo "count=${COUNT}" >> $GITHUB_ENV
+        echo "today=${TODAY}" >> $GITHUB_ENV
+        
+    - name: 🐍 Генерация нового скрипта
+      id: generate_script
+      run: |
+        COUNTER=$(( ${{ env.count }} + 1 ))
+        TODAY=${{ env.today }}
+        
+        # Определение типов скриптов
+        IDEAS=(
+          "hello"
+          "calculator"
+          "random"
+          "data_processor"
+          "file_manager"
+          "api_client"
+          "text_generator"
+          "math_helper"
+          "date_time"
+          "string_utils"
+        )
+        
+        # Загрузка последнего использованного типа
+        LAST_USED=""
+        if [ -f "used_ideas.json" ]; then
+          LAST_USED=$(cat used_ideas.json | grep "last_used_idea" | cut -d '"' -f 4)
+        fi
+        
+        # Выбор случайного типа, исключая последний использованный
+        while true; do
+          RANDOM_INDEX=$(( RANDOM % ${#IDEAS[@]} ))
+          SELECTED_TYPE=${IDEAS[$RANDOM_INDEX]}
+          if [ "$SELECTED_TYPE" != "$LAST_USED" ] || [ ${#IDEAS[@]} -eq 1 ]; then
+            break
+          fi
+        done
+        
+        # Создание содержимого скрипта
+        case $SELECTED_TYPE in
+          "hello")
+            CONTENT="print('Hello from daily script!')\nprint(f'Date: {TODAY}')\n"
+            ;;
+          "calculator")
+            CONTENT="print('Simple calculator')\nprint(f'2 + 2 = {2+2}')\nprint(f'10 * 5 = {10*5}')\nprint(f'25 / 4 = {25/4}')\n"
+            ;;
+          "random")
+            CONTENT="import random\nprint(f'Random number: {random.randint(1, 100)}')\nprint(f'Random choice: {random.choice(['apple', 'banana', 'cherry'])}')\n"
+            ;;
+          "data_processor")
+            CONTENT="import random\ndata = [random.randint(1, 100) for _ in range(10)]\nprint(f'Data: {data}')\nprint(f'Sum: {sum(data)}')\nprint(f'Average: {sum(data) / len(data):.2f}')\n"
+            ;;
+          "file_manager")
+            CONTENT="import os\nprint(f'Files in current directory:')\nfor file in os.listdir('.'):\n    print(f'  {{file}}')\nprint(f'Current directory: {os.getcwd()}')\n"
+            ;;
+          "api_client")
+            CONTENT="# Имитация API клиента\nprint('Simulating API request...')\nresponse = {\n    'status': 'success',\n    'data': {\n        'id': 123,\n        'name': 'John Doe',\n        'email': 'john@example.com'\n    }\n}\nprint(f'API Response: {response}')\n"
+            ;;
+          "text_generator")
+            CONTENT="words = ['hello', 'world', 'python', 'script', 'daily', 'commit']\nimport random\ngenerated_text = ' '.join(random.sample(words, 4))\nprint(f'Generated text: {generated_text}')\n"
+            ;;
+          "math_helper")
+            CONTENT="import math\nprint(f'Pi: {math.pi:.4f}')\nprint(f'Square root of 16: {math.sqrt(16)}')\nprint(f'Factorial of 5: {math.factorial(5)}')\n"
+            ;;
+          "date_time")
+            CONTENT="from datetime import datetime, timedelta\nnow = datetime.now()\nprint(f'Current time: {now}')\ntomorrow = now + timedelta(days=1)\nprint(f'Tomorrow: {tomorrow.strftime("%Y-%m-%d")}')\n"
+            ;;
+          "string_utils")
+            CONTENT="text = 'Hello World Python Script'\nprint(f'Original: {text}')\nprint(f'Lowercase: {text.lower()}')\nprint(f'Uppercase: {text.upper()}')\nprint(f'Word count: {len(text.split())}')\n"
+            ;;
+          *)
+            CONTENT="print('Hello from daily script!')\nprint(f'Date: {TODAY}')\n"
+            SELECTED_TYPE="hello"
+            ;;
+        esac
+        
+        # Создание файла скрипта
+        FILENAME="${TODAY}_$(printf '%02d' $COUNTER)_${SELECTED_TYPE}.py"
+        FILEPATH="daily_python_scripts/$FILENAME"
+        echo "$CONTENT" > "$FILEPATH"
+        
+        echo "Создан файл: $FILENAME"
+        echo "file_path=$FILEPATH" >> $GITHUB_ENV
+        echo "file_name=$FILENAME" >> $GITHUB_ENV
+        echo "idea_type=$SELECTED_TYPE" >> $GITHUB_ENV
+        
+    - name: 📦 Обновление used_ideas.json
+      run: |
+        # Создание или обновление файла отслеживания идей
+        if [ ! -f "used_ideas.json" ]; then
+          cat > used_ideas.json << 'EOF'
+{
+  "last_used_idea": "",
+  "ideas_count": {
+    "hello": 0,
+    "calculator": 0,
+    "random": 0,
+    "data_processor": 0,
+    "file_manager": 0,
+    "api_client": 0,
+    "text_generator": 0,
+    "math_helper": 0,
+    "date_time": 0,
+    "string_utils": 0
+  }
+}
+EOF
+        fi
+        
+        # Обновление информации об использованных идеях
+        if command -v jq &> /dev/null; then
+          # Используем jq если доступен
+          jq --arg type "${{ env.idea_type }}" '.last_used_idea = $type | .ideas_count[$type] += 1' used_ideas.json > temp.json && mv temp.json used_ideas.json
+        else
+          # Резервный метод без jq
+          python -c "
+import json
+import os
+
+def update_used_ideas():
+    file_path = 'used_ideas.json'
+    
+    # Загружаем существующие данные
+    if os.path.exists(file_path):
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+    else:
+        data = {
+            'last_used_idea': '',
+            'ideas_count': {
+                'hello': 0, 'calculator': 0, 'random': 0,
+                'data_processor': 0, 'file_manager': 0, 'api_client': 0,
+                'text_generator': 0, 'math_helper': 0, 'date_time': 0, 'string_utils': 0
+            }
+        }
+    
+    # Обновляем данные
+    idea_type = '${{ env.idea_type }}'
+    data['last_used_idea'] = idea_type
+    if idea_type in data['ideas_count']:
+        data['ideas_count'][idea_type] += 1
+    else:
+        data['ideas_count'][idea_type] = 1
+    
+    # Сохраняем обновленные данные
+    with open(file_path, 'w') as f:
+        json.dump(data, f, indent=2)
+
+update_used_ideas()
+"
+        fi
+        
+        echo "Обновлен файл used_ideas.json"
+        
+    - name: 📝 Обновление README.md
+      run: |
+        # Подсчитываем количество скриптов
+        SCRIPT_COUNT=$(find daily_python_scripts -name "*.py" | wc -l)
+        
+        # Получаем общее количество сгенерированных скриптов из used_ideas.json
+        if command -v jq &> /dev/null; then
+          TOTAL_GENERATED=$(jq '[.ideas_count[]] | add' used_ideas.json)
+        else
+          # Резервный метод
+          TOTAL_GENERATED=$(python -c "import json; data=json.load(open('used_ideas.json')); print(sum(data['ideas_count'].values()))" 2>/dev/null || echo 0)
+        fi
+        
+        # Собираем статистику по типам скриптов
+        STATS=""
+        if command -v jq &> /dev/null; then
+          for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
+            count=$(jq -r ".ideas_count[\"$idea\"]" used_ideas.json 2>/dev/null || echo 0)
+            if [ "$count" -gt 0 ]; then
+              STATS="$STATS\n- $idea: $count times"
+            fi
+          done
+        else
+          # Резервный метод
+          for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
+            count=$(python -c "import json; data=json.load(open('used_ideas.json')); print(data['ideas_count'].get('$idea', 0))" 2>/dev/null || echo 0)
+            if [ "$count" -gt 0 ]; then
+              STATS="$STATS\n- $idea: $count times"
+            fi
+          done
+        fi
+        
+        # Создаем или обновляем README.md
+        cat > README.md << EOF
+# Daily Python Scripts
+
+Last update: $(date +"%Y-%m-%d")
+Total scripts: $SCRIPT_COUNT ($TOTAL_GENERATED generated)
+
+This repository is automatically updated daily with new Python scripts.
+
+## Script Ideas Statistics
+$STATS
+EOF
+        
+        echo "Обновлен README.md"
+        
+    - name: 📦 Создание файла лога
+      run: |
+        LOG_DIR="logs"
+        LOG_FILE="${LOG_DIR}/daily_commit_$(date +"%Y-%m-%d").log"
+        mkdir -p "$LOG_DIR"
+        
+        cat > "$LOG_FILE" << EOF
+$(date +"%Y-%m-%d %H:%M:%S") - INFO - Starting daily commit process
+$(date +"%Y-%m-%d %H:%M:%S") - INFO - Created script: ${{ env.file_name }}
+$(date +"%Y-%m-%d %H:%M:%S") - INFO - README updated successfully
+$(date +"%Y-%m-%d %H:%M:%S") - INFO - GitHub Actions workflow completed successfully
+$(date +"%Y-%m-%d %H:%M:%S") - INFO - Daily commit process finished
+EOF
+        
+        echo "Создан файл лога: $LOG_FILE"
+        
+    - name: 📤 Коммит и пуш изменений
+      run: |
+        git config --local user.email "action@github.com"
+        git config --local user.name "GitHub Action"
+        git add .
+        
+        # Проверяем, есть ли изменения для коммита
+        if git diff-index --quiet HEAD --; then
+          echo "Нет изменений для коммита"
+        else
+          git commit -m "🤖 Daily commit: ${{ env.today }} - ${{ env.idea_type }} script"
+          git push
+          echo "Изменения закоммичены и отправлены в репозиторий"
+        fi
+        
+    - name: 📊 Отчет о выполнении
+      run: |
+        echo "========================================"
+        echo "✅ ЕЖЕДНЕВНЫЙ КОММИТ УСПЕШНО ВЫПОЛНЕН"
+        echo "========================================"
+        echo "Дата: ${{ env.today }}"
+        echo "Время: $(date +"%H:%M:%S")"
+        echo "Создан файл: ${{ env.file_name }}"
+        echo "Тип скрипта: ${{ env.idea_type }}"
+        echo "Номер в серии: $(( ${{ env.count }} + 1 ))"
+        echo "Всего скриптов: $(find daily_python_scripts -name "*.py" | wc -l)"
+        echo "Ссылка на коммит: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
+        echo "========================================"
