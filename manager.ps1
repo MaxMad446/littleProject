@@ -1,5 +1,3 @@
-# Создайте manager.ps1 для управления заданием
-@'
 # manager.ps1 - управление автоматическим коммитом
 
 function Show-Menu {
@@ -20,7 +18,12 @@ function Show-Menu {
 
 function Run-Commit {
     Write-Host "Запуск коммита..." -ForegroundColor Yellow
-    python daily_commit.py
+    Set-Location $PSScriptRoot
+    if (Test-Path "daily.py") {
+        python daily.py
+    } else {
+        Write-Host "❌ Файл daily.py не найден!" -ForegroundColor Red
+    }
     pause
 }
 
@@ -41,11 +44,12 @@ function Show-Status {
 }
 
 function Show-Logs {
-    if (Test-Path "daily_commit.log") {
+    $logPath = "logs/daily_commit.log"
+    if (Test-Path $logPath) {
         Write-Host "Последние 10 записей лога:" -ForegroundColor Cyan
-        Get-Content "daily_commit.log" -Tail 10
+        Get-Content $logPath -Tail 10
     } else {
-        Write-Host "Файл лога не найден" -ForegroundColor Yellow
+        Write-Host "Файл лога не найден: $logPath" -ForegroundColor Yellow
     }
     pause
 }
@@ -54,15 +58,17 @@ function Check-Settings {
     Write-Host "Проверка настроек:" -ForegroundColor Cyan
     
     # Проверка Python
-    if (Get-Command python -ErrorAction SilentlyContinue) {
-        Write-Host "✅ Python найден" -ForegroundColor Green
+    $pythonVersion = python --version 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Python найден: $pythonVersion" -ForegroundColor Green
     } else {
         Write-Host "❌ Python не найден" -ForegroundColor Red
     }
     
     # Проверка git
-    if (Get-Command git -ErrorAction SilentlyContinue) {
-        Write-Host "✅ Git найден" -ForegroundColor Green
+    $gitVersion = git --version 2>&1
+    if ($LASTEXITCODE -eq 0) {
+        Write-Host "✅ Git найден: $gitVersion" -ForegroundColor Green
     } else {
         Write-Host "❌ Git не найден" -ForegroundColor Red
     }
@@ -73,6 +79,20 @@ function Check-Settings {
         Write-Host "✅ Папка скриптов: $count файлов" -ForegroundColor Green
     } else {
         Write-Host "❌ Папка скриптов не найдена" -ForegroundColor Red
+    }
+    
+    # Проверка конфигурационного файла
+    if (Test-Path "config.json") {
+        Write-Host "✅ Конфигурационный файл найден" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Конфигурационный файл не найден" -ForegroundColor Red
+    }
+    
+    # Проверка файла отслеживания идей
+    if (Test-Path "used_ideas.json") {
+        Write-Host "✅ Файл отслеживания идей найден" -ForegroundColor Green
+    } else {
+        Write-Host "❌ Файл отслеживания идей не найден" -ForegroundColor Red
     }
     
     pause
@@ -101,11 +121,13 @@ function Start-Task {
 function Show-Scripts {
     if (Test-Path "daily_python_scripts") {
         $scripts = Get-ChildItem "daily_python_scripts\*.py" | Sort-Object LastWriteTime -Descending
-        Write-Host "Последние 5 скриптов:" -ForegroundColor Cyan
-        $scripts | Select-Object -First 5 | ForEach-Object {
+        Write-Host "Последние 10 скриптов:" -ForegroundColor Cyan
+        $scripts | Select-Object -First 10 | ForEach-Object {
+            $size = $_.Length / 1KB
             Write-Host "  📄 $($_.Name)" -ForegroundColor White
+            Write-Host "     📏 Размер: $([Math]::Round($size,2)) KB, Дата: $($_.LastWriteTime)" -ForegroundColor Gray
         }
-        Write-Host "`nВсего скриптов: $($scripts.Count)" -ForegroundColor Yellow
+        Write-Host "\nВсего скриптов: $($scripts.Count)" -ForegroundColor Yellow
     } else {
         Write-Host "Папка скриптов не найдена" -ForegroundColor Red
     }
@@ -135,6 +157,3 @@ do {
         }
     }
 } while ($true)
-'@ | Set-Content -Path "manager.ps1" -Encoding UTF8
-
-Write-Host "✅ Файл manager.ps1 создан" -ForegroundColor Green

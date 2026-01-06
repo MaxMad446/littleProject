@@ -1,11 +1,21 @@
-
 {
     "project_path": "C:/Users/Maxim/Desktop/Project/DailyCommit/littleProject",
     "scripts_folder": "daily_python_scripts",
     "daily_time": "09:00",
     "git_branch": "main",
+    "max_daily_scripts": 5,
+    "min_script_size_kb": 0.1,
+    "backup_enabled": true,
+    "backup_frequency": "weekly",
+    "error_retry_count": 3,
+    "error_retry_delay": 60,
     "commit_message_prefix": "🤖 Daily commit:",
     "ideas_file": "used_ideas.json",
-    "log_file": "daily_commit.log"
+    "log_file": "daily_commit.log",
+    "script_naming_format": "{date}_{counter:02d}_{type}.py",
+    "supported_script_types": ["hello", "calculator", "random", "data_processor", "file_manager", "api_client", "text_generator", "math_helper", "date_time", "string_utils"],
+    "default_encoding": "utf-8",
+    "git_retry_enabled": true,
+    "git_retry_count": 3,
+    "git_retry_delay": 30
 }
-

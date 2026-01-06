@@ -1,5 +1,3 @@
-# Обновите .gitignore
-@'
 # Python
 __pycache__/
 *.py[cod]
@@ -41,11 +39,11 @@ desktop.ini
 temp/
 tmp/
 
-# Файлы скриптов (можно добавить, если не хотите их в репозитории)
+# Файлы скриптов (опционально)
 # test_script.py
 # example.txt
 
-# Конфигурационные файлы (опционально, если хотите хранить в репозитории)
+# Конфигурационные файлы (опционально)
 # config.json
 # used_ideas.json
 
@@ -55,11 +53,9 @@ tmp/
 *.cmd
 
 # Исключения (файлы которые должны быть в репозитории)
-!daily_commit.py
+!daily.py
 !manager.ps1
 !setup.ps1
 !run_daily.bat
 !config.json
-'@ | Set-Content -Path ".gitignore" -Encoding UTF8
-
-Write-Host "✅ Файл .gitignore обновлен" -ForegroundColor Green
+!simple.py
