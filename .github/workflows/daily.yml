@@ -262,8 +262,8 @@ EOF
         
     - name: 📤 Коммит и пуш изменений
       run: |
-        git config --local user.email "action@github.com"
-        git config --local user.name "GitHub Action"
+        git config --local user.email "Puper-1981@mail.ru"
+        git config --local user.name "MaxMad446"
         git add .
         
         # Проверяем, есть ли изменения для коммита

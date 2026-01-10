@@ -1,15 +1,15 @@
 {
-  "last_used_idea": "hello",
-  "ideas_count": {
-    "hello": 1,
-    "calculator": 0,
-    "random": 0,
-    "data_processor": 0,
-    "file_manager": 0,
-    "api_client": 0,
-    "text_generator": 0,
-    "math_helper": 0,
-    "date_time": 0,
-    "string_utils": 0
-  }
+    "last_used_idea": "hello",
+    "ideas_count": {
+        "hello": 4,
+        "calculator": 3,
+        "random": 1,
+        "data_processor": 0,
+        "file_manager": 1,
+        "api_client": 2,
+        "text_generator": 1,
+        "math_helper": 1,
+        "date_time": 2,
+        "string_utils": 1
+    }
 }
