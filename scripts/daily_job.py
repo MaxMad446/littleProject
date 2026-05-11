@@ -79,9 +79,12 @@ This repository is automatically updated daily with new Python scripts.
         f.write(f"{datetime.now()} - INFO - Generated: {filename}\n")
     
     # Выводим переменные для GitHub Actions
-    print(f"::set-output name=file_name::{os.path.basename(filename)}")
-    print(f"::set-output name=idea_type::{idea}")
-    print(f"::set-output name=today::{today}")
+    github_output = os.environ.get('GITHUB_OUTPUT')
+    if github_output:
+        with open(github_output, 'a') as f:
+            f.write(f"file_name={os.path.basename(filename)}\n")
+            f.write(f"idea_type={idea}\n")
+            f.write(f"today={today}\n")
     print(f"✅ Generated: {filename}")
 
 if __name__ == "__main__":
