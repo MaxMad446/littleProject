@@ -13,213 +13,27 @@ jobs:
     permissions:
       contents: write
 
-    env:
-      PYTHON_VERSION: '3.11'
-
     steps:
-      - name: 🛠️ Настройка окружения
+      - name: 📥 Checkout
         uses: actions/checkout@v4
-        with:
-          token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: 🐍 Установка Python
+      - name: 🐍 Setup Python
         uses: actions/setup-python@v4
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
 
-      - name: 📦 Установка зависимостей
+      - name: 🔄 Запуск ежедневной задачи
+        run: python3 scripts/daily_job.py
+
+      - name: 📤 Коммит и пуш
         run: |
-          echo "Установка необходимых пакетов..."
-          python -m pip install --upgrade pip
-
-      - name: 📂 Создание необходимых папок
-        run: |
-          mkdir -p daily_python_scripts
-          mkdir -p logs
-          mkdir -p backups
-
-      - name: 📝 Проверка существующих файлов
-        id: check_files
-        run: |
-          TODAY=$(date +"%Y-%m-%d")
-          COUNT=$(ls daily_python_scripts/${TODAY}_*.py 2>/dev/null | wc -l)
-          echo "count=${COUNT}" >> $GITHUB_ENV
-          echo "today=${TODAY}" >> $GITHUB_ENV
-
-      - name: 🐍 Генерация нового скрипта
-        id: generate_script
-        run: |
-          COUNTER=$(( ${{ env.count }} + 1 ))
-          TODAY=${{ env.today }}
-
-          IDEAS=(
-            "hello" "calculator" "random" "data_processor" "file_manager"
-            "api_client" "text_generator" "math_helper" "date_time" "string_utils"
-          )
-
-          LAST_USED=""
-          if [ -f "used_ideas.json" ]; then
-            LAST_USED=$(grep -o '"last_used_idea"[[:space:]]*:[[:space:]]*"[^"]*"' used_ideas.json | cut -d'"' -f4)
-          fi
-
-          while true; do
-            RANDOM_INDEX=$(( RANDOM % ${#IDEAS[@]} ))
-            SELECTED_TYPE=${IDEAS[$RANDOM_INDEX]}
-            if [ "$SELECTED_TYPE" != "$LAST_USED" ] || [ ${#IDEAS[@]} -eq 1 ]; then
-              break
-            fi
-          done
-
-          case $SELECTED_TYPE in
-            "hello")
-              CONTENT='print("Hello from daily script!")\nprint(f"Date: {TODAY}")\n'
-              ;;
-            "calculator")
-              CONTENT='print("Simple calculator")\nprint(f"2 + 2 = {2+2}")\nprint(f"10 * 5 = {10*5}")\nprint(f"25 / 4 = {25/4}")\n'
-              ;;
-            "random")
-              CONTENT='import random\nprint(f"Random number: {random.randint(1, 100)}")\nfruits = ["apple", "banana", "cherry"]\nprint(f"Random choice: {random.choice(fruits)}")\n'
-              ;;
-            "data_processor")
-              CONTENT='import random\ndata = [random.randint(1, 100) for _ in range(10)]\nprint(f"Data: {data}")\nprint(f"Sum: {sum(data)}")\nprint(f"Average: {sum(data) / len(data):.2f}")\n'
-              ;;
-            "file_manager")
-              CONTENT='import os\nprint("Files in current directory:")\nfor file in os.listdir("."):\n    print(f" {file}")\nprint(f"Current directory: {os.getcwd()}")\n'
-              ;;
-            "api_client")
-              CONTENT='print("Simulating API request...")\nresponse = {"status": "success", "data": {"id": 123, "name": "John Doe", "email": "john@example.com"}}\nprint(f"API Response: {response}")\n'
-              ;;
-            "text_generator")
-              CONTENT="words = ['hello', 'world', 'python', 'script', 'daily', 'commit']\nimport random\ngenerated_text = ' '.join(random.sample(words, 4))\nprint(f'Generated text: {generated_text}')\n"
-              ;;
-            "math_helper")
-              CONTENT='import math\nprint(f"Pi: {math.pi:.4f}")\nprint(f"Square root of 16: {math.sqrt(16)}")\nprint(f"Factorial of 5: {math.factorial(5)}")\n'
-              ;;
-            "date_time")
-              CONTENT='from datetime import datetime, timedelta\nnow = datetime.now()\nprint(f"Current time: {now}")\ntomorrow = now + timedelta(days=1)\nprint(f"Tomorrow: {tomorrow.strftime(\"%Y-%m-%d\")}")\n'
-              ;;
-            "string_utils")
-              CONTENT="text = 'Hello World Python Script'\nprint(f'Original: {text}')\nprint(f'Lowercase: {text.lower()}')\nprint(f'Uppercase: {text.upper()}')\nprint(f'Word count: {len(text.split())}')\n"
-              ;;
-            *)
-              CONTENT='print("Hello from daily script!")\nprint(f"Date: {TODAY}")\n'
-              SELECTED_TYPE="hello"
-              ;;
-          esac
-
-          FILENAME="${TODAY}_$(printf '%02d' $COUNTER)_${SELECTED_TYPE}.py"
-          FILEPATH="daily_python_scripts/$FILENAME"
-          printf "%b" "$CONTENT" > "$FILEPATH"
-
-          echo "Создан файл: $FILENAME"
-          echo "file_path=$FILEPATH" >> $GITHUB_ENV
-          echo "file_name=$FILENAME" >> $GITHUB_ENV
-          echo "idea_type=$SELECTED_TYPE" >> $GITHUB_ENV
-
-      - name: 📦 Обновление used_ideas.json
-        run: |
-          if [ ! -f "used_ideas.json" ]; then
-            cat > used_ideas.json << 'JSONEOF'
-{
-  "last_used_idea": "",
-  "ideas_count": {
-    "hello": 0, "calculator": 0, "random": 0,
-    "data_processor": 0, "file_manager": 0, "api_client": 0,
-    "text_generator": 0, "math_helper": 0, "date_time": 0, "string_utils": 0
-  }
-}
-JSONEOF
-          fi
-
-          if command -v jq &> /dev/null; then
-            jq --arg type "${{ env.idea_type }}" '.last_used_idea = $type | .ideas_count[$type] += 1' used_ideas.json > temp.json && mv temp.json used_ideas.json
-          else
-            python3 << 'PYEOF'
-import json, os
-idea_type = os.environ.get('idea_type', 'hello')
-file_path = 'used_ideas.json'
-if os.path.exists(file_path):
-    with open(file_path, 'r') as f:
-        data = json.load(f)
-else:
-    data = {
-        'last_used_idea': '',
-        'ideas_count': {k: 0 for k in ['hello','calculator','random','data_processor','file_manager','api_client','text_generator','math_helper','date_time','string_utils']}
-    }
-data['last_used_idea'] = idea_type
-data['ideas_count'][idea_type] = data['ideas_count'].get(idea_type, 0) + 1
-with open(file_path, 'w') as f:
-    json.dump(data, f, indent=2)
-PYEOF
-          fi
-          echo "Обновлен used_ideas.json"
-
-      - name: 📝 Обновление README.md
-        run: |
-          SCRIPT_COUNT=$(find daily_python_scripts -name "*.py" | wc -l)
-          
-          if command -v jq &> /dev/null; then
-            TOTAL_GENERATED=$(jq '[.ideas_count[]] | add // 0' used_ideas.json 2>/dev/null || echo 0)
-          else
-            TOTAL_GENERATED=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(sum(data['ideas_count'].values()))" 2>/dev/null || echo 0)
-          fi
-
-          # Собираем статистику в массив, потом объединяем
-          STATS_LINES=""
-          for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
-            if command -v jq &> /dev/null; then
-              count=$(jq -r --arg key "$idea" '.ideas_count[$key] // 0' used_ideas.json 2>/dev/null || echo 0)
-            else
-              count=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(data['ideas_count'].get('$idea', 0))" 2>/dev/null || echo 0)
-            fi
-            if [ "$count" -gt 0 ] 2>/dev/null; then
-              STATS_LINES="${STATS_LINES}- ${idea}: ${count} times\n"
-            fi
-          done
-
-          # Генерируем README
-          {
-            echo "# Daily Python Scripts"
-            echo ""
-            echo "Last update: $(date +"%Y-%m-%d")"
-            echo "Total scripts: $SCRIPT_COUNT ($TOTAL_GENERATED generated)"
-            echo ""
-            echo "This repository is automatically updated daily with new Python scripts."
-            echo ""
-            echo "## Script Ideas Statistics"
-            if [ -n "$STATS_LINES" ]; then
-              echo -e "$STATS_LINES"
-            fi
-          } > README.md
-          
-          echo "Обновлен README.md"
-
-      - name: 📦 Создание файла лога
-        run: |
-          LOG_DIR="logs"
-          LOG_FILE="${LOG_DIR}/daily_commit_$(date +"%Y-%m-%d").log"
-          mkdir -p "$LOG_DIR"
-          {
-            echo "$(date +"%Y-%m-%d %H:%M:%S") - INFO - Daily commit completed"
-            echo "$(date +"%Y-%m-%d %H:%M:%S") - INFO - Script: ${{ env.file_name }}"
-          } > "$LOG_FILE"
-          echo "Создан лог: $LOG_FILE"
-
-      - name: 📤 Коммит и пуш изменений
-        run: |
-          git config --local user.email "Puper-1981@mail.ru"
-          git config --local user.name "MaxMad446"
+          git config user.name "MaxMad446"
+          git config user.email "Puper-1981@mail.ru"
           git add .
-          if ! git diff-index --quiet HEAD --; then
-            git commit -m "🤖 Daily: ${{ env.today }} - ${{ env.idea_type }}"
+          if ! git diff-index --quiet HEAD; then
+            git commit -m "🤖 Daily: $(date +%F)"
             git push
-            echo "✅ Изменения отправлены"
+            echo "✅ Pushed"
           else
-            echo "⚠️ Нет изменений для коммита"
+            echo "⚠️ No changes"
           fi
-
-      - name: 📊 Отчет
-        run: |
-          echo "✅ Daily commit выполнен"
-          echo "📄 Файл: ${{ env.file_name }}"
-          echo "🔗 Коммит: https://github.com/${{ github.repository }}/commit/${{ github.sha }}"
