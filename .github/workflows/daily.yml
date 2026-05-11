@@ -71,17 +71,17 @@ jobs:
           done
 
           case $SELECTED_TYPE in
-            "hello") CONTENT="print('Hello from daily script!')\nprint(f'Date: {TODAY}')\n" ;;
-            "calculator") CONTENT="print('Simple calculator')\nprint(f'2 + 2 = {2+2}')\nprint(f'10 * 5 = {10*5}')\nprint(f'25 / 4 = {25/4}')\n" ;;
-            "random") CONTENT="import random\nprint(f'Random number: {random.randint(1, 100)}')\nprint(f'Random choice: {random.choice(['apple', 'banana', 'cherry'])}')\n" ;;
-            "data_processor") CONTENT="import random\ndata = [random.randint(1, 100) for _ in range(10)]\nprint(f'Data: {data}')\nprint(f'Sum: {sum(data)}')\nprint(f'Average: {sum(data) / len(data):.2f}')\n" ;;
-            "file_manager") CONTENT="import os\nprint(f'Files in current directory:')\nfor file in os.listdir('.'):\n  print(f' {file}')\nprint(f'Current directory: {os.getcwd()}')\n" ;;
-            "api_client") CONTENT="# Имитация API клиента\nprint('Simulating API request...')\nresponse = {\n  'status': 'success',\n  'data': {\n    'id': 123,\n    'name': 'John Doe',\n    'email': 'john@example.com'\n  }\n}\nprint(f'API Response: {response}')\n" ;;
+            "hello") CONTENT='print("Hello from daily script!")\nprint(f"Date: {TODAY}")\n' ;;
+            "calculator") CONTENT='print("Simple calculator")\nprint(f"2 + 2 = {2+2}")\nprint(f"10 * 5 = {10*5}")\nprint(f"25 / 4 = {25/4}")\n' ;;
+            "random") CONTENT='import random\nprint(f"Random number: {random.randint(1, 100)}")\nprint(f"Random choice: {random.choice([\\"apple\\", \\"banana\\", \\"cherry\\"])}")\n' ;;
+            "data_processor") CONTENT='import random\ndata = [random.randint(1, 100) for _ in range(10)]\nprint(f"Data: {data}")\nprint(f"Sum: {sum(data)}")\nprint(f"Average: {sum(data) / len(data):.2f}")\n' ;;
+            "file_manager") CONTENT='import os\nprint("Files in current directory:")\nfor file in os.listdir("."):\n  print(f" {file}")\nprint(f"Current directory: {os.getcwd()}")\n' ;;
+            "api_client") CONTENT='# Имитация API клиента\nprint("Simulating API request...")\nresponse = {\n  "status": "success",\n  "data": {\n    "id": 123,\n    "name": "John Doe",\n    "email": "john@example.com"\n  }\n}\nprint(f"API Response: {response}")\n' ;;
             "text_generator") CONTENT="words = ['hello', 'world', 'python', 'script', 'daily', 'commit']\nimport random\ngenerated_text = ' '.join(random.sample(words, 4))\nprint(f'Generated text: {generated_text}')\n" ;;
-            "math_helper") CONTENT="import math\nprint(f'Pi: {math.pi:.4f}')\nprint(f'Square root of 16: {math.sqrt(16)}')\nprint(f'Factorial of 5: {math.factorial(5)}')\n" ;;
-            "date_time") CONTENT="from datetime import datetime, timedelta\nnow = datetime.now()\nprint(f'Current time: {now}')\ntomorrow = now + timedelta(days=1)\nprint(f'Tomorrow: {tomorrow.strftime(\"%Y-%m-%d\")}')\n" ;;
+            "math_helper") CONTENT='import math\nprint(f"Pi: {math.pi:.4f}")\nprint(f"Square root of 16: {math.sqrt(16)}")\nprint(f"Factorial of 5: {math.factorial(5)}")\n' ;;
+            "date_time") CONTENT='from datetime import datetime, timedelta\nnow = datetime.now()\nprint(f"Current time: {now}")\ntomorrow = now + timedelta(days=1)\nprint(f"Tomorrow: {tomorrow.strftime("%Y-%m-%d")}")\n' ;;
             "string_utils") CONTENT="text = 'Hello World Python Script'\nprint(f'Original: {text}')\nprint(f'Lowercase: {text.lower()}')\nprint(f'Uppercase: {text.upper()}')\nprint(f'Word count: {len(text.split())}')\n" ;;
-            *) CONTENT="print('Hello from daily script!')\nprint(f'Date: {TODAY}')\n"; SELECTED_TYPE="hello" ;;
+            *) CONTENT='print("Hello from daily script!")\nprint(f"Date: {TODAY}")\n'; SELECTED_TYPE="hello" ;;
           esac
 
           FILENAME="${TODAY}_$(printf '%02d' $COUNTER)_${SELECTED_TYPE}.py"
@@ -111,20 +111,23 @@ EOF
           if command -v jq &> /dev/null; then
             jq --arg type "${{ env.idea_type }}" '.last_used_idea = $type | .ideas_count[$type] += 1' used_ideas.json > temp.json && mv temp.json used_ideas.json
           else
-            python -c "
+            python3 << 'PYEOF'
 import json, os
-def update_used_ideas():
-    file_path = 'used_ideas.json'
-    if os.path.exists(file_path):
-        with open(file_path, 'r') as f: data = json.load(f)
-    else:
-        data = {'last_used_idea': '', 'ideas_count': {k:0 for k in ['hello','calculator','random','data_processor','file_manager','api_client','text_generator','math_helper','date_time','string_utils']}}
-    idea_type = '${{ env.idea_type }}'
-    data['last_used_idea'] = idea_type
-    data['ideas_count'][idea_type] = data['ideas_count'].get(idea_type, 0) + 1
-    with open(file_path, 'w') as f: json.dump(data, f, indent=2)
-update_used_ideas()
-"
+idea_type = os.environ.get('idea_type', 'hello')
+file_path = 'used_ideas.json'
+if os.path.exists(file_path):
+    with open(file_path, 'r') as f:
+        data = json.load(f)
+else:
+    data = {
+        'last_used_idea': '',
+        'ideas_count': {k: 0 for k in ['hello','calculator','random','data_processor','file_manager','api_client','text_generator','math_helper','date_time','string_utils']}
+    }
+data['last_used_idea'] = idea_type
+data['ideas_count'][idea_type] = data['ideas_count'].get(idea_type, 0) + 1
+with open(file_path, 'w') as f:
+    json.dump(data, f, indent=2)
+PYEOF
           fi
           echo "Обновлен used_ideas.json"
 
@@ -132,25 +135,26 @@ update_used_ideas()
         run: |
           SCRIPT_COUNT=$(find daily_python_scripts -name "*.py" | wc -l)
           if command -v jq &> /dev/null; then
-            TOTAL_GENERATED=$(jq '[.ideas_count[]] | add' used_ideas.json)
+            TOTAL_GENERATED=$(jq '[.ideas_count[]] | add' used_ideas.json 2>/dev/null || echo 0)
           else
-            TOTAL_GENERATED=$(python -c "import json; data=json.load(open('used_ideas.json')); print(sum(data['ideas_count'].values()))" 2>/dev/null || echo 0)
+            TOTAL_GENERATED=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(sum(data['ideas_count'].values()))" 2>/dev/null || echo 0)
           fi
 
           STATS=""
           if command -v jq &> /dev/null; then
             for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
-              # ✅ Исправленная строка с кавычками:
-              count=$(jq -r '.ideas_count["'$idea'"]' used_ideas.json 2>/dev/null || echo 0)
-              if [ "$count" -gt 0 ]; then
-                STATS="$STATS\n- $idea: $count times"
+              count=$(jq -r --arg key "$idea" '.ideas_count[$key] // 0' used_ideas.json 2>/dev/null || echo 0)
+              if [ "$count" -gt 0 ] 2>/dev/null; then
+                STATS="${STATS}
+- ${idea}: ${count} times"
               fi
             done
           else
             for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
-              count=$(python -c "import json; data=json.load(open('used_ideas.json')); print(data['ideas_count'].get('$idea', 0))" 2>/dev/null || echo 0)
-              if [ "$count" -gt 0 ]; then
-                STATS="$STATS\n- $idea: $count times"
+              count=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(data['ideas_count'].get('$idea', 0))" 2>/dev/null || echo 0)
+              if [ "$count" -gt 0 ] 2>/dev/null; then
+                STATS="${STATS}
+- ${idea}: ${count} times"
               fi
             done
           fi
@@ -163,8 +167,7 @@ Total scripts: $SCRIPT_COUNT ($TOTAL_GENERATED generated)
 
 This repository is automatically updated daily with new Python scripts.
 
-## Script Ideas Statistics
-$STATS
+## Script Ideas Statistics$STATS
 EOF
           echo "Обновлен README.md"
 
