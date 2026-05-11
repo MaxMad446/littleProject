@@ -59,3 +59,7 @@ tmp/
 !run_daily.bat
 !config.json
 !simple.py
+# Auto-generated
+logs/
+__pycache__/
+*.pyc
