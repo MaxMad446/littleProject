@@ -119,7 +119,7 @@ jobs:
       - name: 📦 Обновление used_ideas.json
         run: |
           if [ ! -f "used_ideas.json" ]; then
-            cat > used_ideas.json << 'EOF'
+            cat > used_ideas.json << 'JSONEOF'
 {
   "last_used_idea": "",
   "ideas_count": {
@@ -128,13 +128,13 @@ jobs:
     "text_generator": 0, "math_helper": 0, "date_time": 0, "string_utils": 0
   }
 }
-EOF
+JSONEOF
           fi
 
           if command -v jq &> /dev/null; then
             jq --arg type "${{ env.idea_type }}" '.last_used_idea = $type | .ideas_count[$type] += 1' used_ideas.json > temp.json && mv temp.json used_ideas.json
           else
-            python3 << PYEOF
+            python3 << 'PYEOF'
 import json, os
 idea_type = os.environ.get('idea_type', 'hello')
 file_path = 'used_ideas.json'
@@ -157,13 +157,15 @@ PYEOF
       - name: 📝 Обновление README.md
         run: |
           SCRIPT_COUNT=$(find daily_python_scripts -name "*.py" | wc -l)
+          
           if command -v jq &> /dev/null; then
             TOTAL_GENERATED=$(jq '[.ideas_count[]] | add // 0' used_ideas.json 2>/dev/null || echo 0)
           else
             TOTAL_GENERATED=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(sum(data['ideas_count'].values()))" 2>/dev/null || echo 0)
           fi
 
-          STATS=""
+          # Собираем статистику в массив, потом объединяем
+          STATS_LINES=""
           for idea in hello calculator random data_processor file_manager api_client text_generator math_helper date_time string_utils; do
             if command -v jq &> /dev/null; then
               count=$(jq -r --arg key "$idea" '.ideas_count[$key] // 0' used_ideas.json 2>/dev/null || echo 0)
@@ -171,21 +173,25 @@ PYEOF
               count=$(python3 -c "import json; data=json.load(open('used_ideas.json')); print(data['ideas_count'].get('$idea', 0))" 2>/dev/null || echo 0)
             fi
             if [ "$count" -gt 0 ] 2>/dev/null; then
-              STATS="${STATS}
-- ${idea}: ${count} times"
+              STATS_LINES="${STATS_LINES}- ${idea}: ${count} times\n"
             fi
           done
 
-          cat > README.md << EOF
-# Daily Python Scripts
-
-Last update: $(date +"%Y-%m-%d")
-Total scripts: $SCRIPT_COUNT ($TOTAL_GENERATED generated)
-
-This repository is automatically updated daily with new Python scripts.
-
-## Script Ideas Statistics$STATS
-EOF
+          # Генерируем README
+          {
+            echo "# Daily Python Scripts"
+            echo ""
+            echo "Last update: $(date +"%Y-%m-%d")"
+            echo "Total scripts: $SCRIPT_COUNT ($TOTAL_GENERATED generated)"
+            echo ""
+            echo "This repository is automatically updated daily with new Python scripts."
+            echo ""
+            echo "## Script Ideas Statistics"
+            if [ -n "$STATS_LINES" ]; then
+              echo -e "$STATS_LINES"
+            fi
+          } > README.md
+          
           echo "Обновлен README.md"
 
       - name: 📦 Создание файла лога
@@ -193,10 +199,10 @@ EOF
           LOG_DIR="logs"
           LOG_FILE="${LOG_DIR}/daily_commit_$(date +"%Y-%m-%d").log"
           mkdir -p "$LOG_DIR"
-          cat > "$LOG_FILE" << EOF
-$(date +"%Y-%m-%d %H:%M:%S") - INFO - Daily commit completed
-$(date +"%Y-%m-%d %H:%M:%S") - INFO - Script: ${{ env.file_name }}
-EOF
+          {
+            echo "$(date +"%Y-%m-%d %H:%M:%S") - INFO - Daily commit completed"
+            echo "$(date +"%Y-%m-%d %H:%M:%S") - INFO - Script: ${{ env.file_name }}"
+          } > "$LOG_FILE"
           echo "Создан лог: $LOG_FILE"
 
       - name: 📤 Коммит и пуш изменений
