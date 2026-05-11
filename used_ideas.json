@@ -1,9 +1,9 @@
 {
-    "last_used_idea": "hello",
+    "last_used_idea": "calculator",
     "ideas_count": {
         "hello": 4,
-        "calculator": 3,
-        "random": 1,
+        "calculator": 5,
+        "random": 2,
         "data_processor": 0,
         "file_manager": 1,
         "api_client": 2,
