@@ -1,11 +1,11 @@
 {
-  "last_used_idea": "hello",
+  "last_used_idea": "file_manager",
   "ideas_count": {
     "hello": 6,
     "calculator": 6,
     "random": 4,
     "data_processor": 4,
-    "file_manager": 3,
+    "file_manager": 4,
     "api_client": 4,
     "text_generator": 2,
     "math_helper": 3,
