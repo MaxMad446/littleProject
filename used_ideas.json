@@ -1,10 +1,10 @@
 {
-  "last_used_idea": "date_time",
+  "last_used_idea": "data_processor",
   "ideas_count": {
     "hello": 8,
     "calculator": 6,
     "random": 9,
-    "data_processor": 7,
+    "data_processor": 8,
     "file_manager": 5,
     "api_client": 6,
     "text_generator": 7,
