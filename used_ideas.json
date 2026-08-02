@@ -1,9 +1,9 @@
 {
-  "last_used_idea": "text_generator",
+  "last_used_idea": "random",
   "ideas_count": {
     "hello": 12,
     "calculator": 12,
-    "random": 14,
+    "random": 15,
     "data_processor": 10,
     "file_manager": 10,
     "api_client": 11,
