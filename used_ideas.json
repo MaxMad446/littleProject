@@ -1,12 +1,12 @@
 {
-  "last_used_idea": "text_generator",
+  "last_used_idea": "api_client",
   "ideas_count": {
     "hello": 20,
     "calculator": 14,
     "random": 17,
     "data_processor": 12,
     "file_manager": 11,
-    "api_client": 13,
+    "api_client": 14,
     "text_generator": 20,
     "math_helper": 18,
     "date_time": 18,
