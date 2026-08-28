@@ -1,5 +1,5 @@
 {
-  "last_used_idea": "file_manager",
+  "last_used_idea": "string_utils",
   "ideas_count": {
     "hello": 20,
     "calculator": 14,
@@ -10,6 +10,6 @@
     "text_generator": 21,
     "math_helper": 18,
     "date_time": 18,
-    "string_utils": 15
+    "string_utils": 16
   }
 }
