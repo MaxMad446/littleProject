@@ -1,5 +1,5 @@
 {
-  "last_used_idea": "hello",
+  "last_used_idea": "text_generator",
   "ideas_count": {
     "hello": 23,
     "calculator": 16,
@@ -7,7 +7,7 @@
     "data_processor": 15,
     "file_manager": 15,
     "api_client": 14,
-    "text_generator": 21,
+    "text_generator": 22,
     "math_helper": 19,
     "date_time": 20,
     "string_utils": 19
